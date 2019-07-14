@@ -12,7 +12,13 @@ config MACH_XIAOMI_MIDO
         bool "Mido board"
         select MACH_XIAOMI_MSM8953
         help
-          Support for Xiaomi Redmi note 3
+          Support for Xiaomi Redmi note 4
+
+config MACH_XIAOMI_OXYGEN
+	bool "Oxygen board"
+	select MACH_XIAOMI_MSM8953
+	help
+	  Support for Xiaomi Mi Max 2 oxygen
 
 config MACH_XIAOMI_TISSOT
 	bool "Tissot board"
