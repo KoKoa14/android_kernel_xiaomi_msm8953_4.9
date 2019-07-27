@@ -46,8 +46,11 @@
 #include <linux/file.h>
 #include <linux/kthread.h>
 #include <linux/dma-buf.h>
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 #include <linux/mdss_io_util.h>
+#endif
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+#include <linux/wakelock.h>
 #endif
 #include "mdss_fb.h"
 #include "mdss_mdp_splash_logo.h"
@@ -124,7 +127,7 @@ static int mdss_fb_send_panel_event(struct msm_fb_data_type *mfd,
 					int event, void *arg);
 static void mdss_fb_set_mdp_sync_pt_threshold(struct msm_fb_data_type *mfd,
 		int type);
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 #define WAIT_RESUME_TIMEOUT 200
 struct fb_info *prim_fbi;
 static struct delayed_work prim_panel_work;
@@ -550,6 +553,23 @@ static ssize_t mdss_mdp_show_blank_event(struct device *dev,
 	return ret;
 }
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static ssize_t mdss_fb_set_dispparam(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	int param, ret;
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
+	struct mdss_panel_data *pdata = dev_get_platdata(&mfd->pdev->dev);
+
+	sscanf(buf, "0x%x", &param);
+	pdata->panel_info.panel_paramstatus = param;
+	ret = mdss_fb_send_panel_event(mfd, MDSS_EVENT_DISPPARAM, NULL);
+
+	return size;
+}
+#endif
+
 static void __mdss_fb_idle_notify_work(struct work_struct *work)
 {
 	struct delayed_work *dw = to_delayed_work(work);
@@ -945,6 +965,9 @@ static ssize_t mdss_fb_idle_pc_notify(struct device *dev,
 }
 
 static DEVICE_ATTR(msm_fb_type, 0444, mdss_fb_get_type, NULL);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static DEVICE_ATTR(msm_fb_dispparam, 0644, NULL, mdss_fb_set_dispparam);
+#endif
 static DEVICE_ATTR(msm_fb_split, 0644, mdss_fb_show_split,
 					mdss_fb_store_split);
 static DEVICE_ATTR(show_blank_event, 0444, mdss_mdp_show_blank_event, NULL);
@@ -968,6 +991,9 @@ static DEVICE_ATTR(idle_power_collapse, 0444, mdss_fb_idle_pc_notify, NULL);
 
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	&dev_attr_msm_fb_dispparam.attr,
+#endif
 	&dev_attr_msm_fb_split.attr,
 	&dev_attr_show_blank_event.attr,
 	&dev_attr_idle_time.attr,
@@ -1476,7 +1502,7 @@ static int mdss_fb_remove(struct platform_device *pdev)
 
 	mdss_fb_remove_sysfs(mfd);
 
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	if (mfd->panel_info && mfd->panel_info->is_prim_panel) {
 		atomic_set(&prim_panel_is_on, false);
 		cancel_delayed_work_sync(&prim_panel_work);
@@ -1659,7 +1685,7 @@ static int mdss_fb_resume(struct platform_device *pdev)
 #endif
 
 #ifdef CONFIG_PM_SLEEP
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 static int mdss_fb_pm_prepare(struct device *dev)
 {
 	struct msm_fb_data_type *mfd = dev_get_drvdata(dev);
@@ -1720,7 +1746,7 @@ static int mdss_fb_pm_resume(struct device *dev)
 #endif
 
 static const struct dev_pm_ops mdss_fb_pm_ops = {
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	.prepare = mdss_fb_pm_prepare,
 	.complete = mdss_fb_pm_complete,
 #endif
@@ -1820,6 +1846,18 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 				bl_notify_needed = true;
 			pr_debug("backlight sent to panel :%d\n", temp);
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+			if (0 == temp) {
+				mfd->backlight_enable_flag = 0;
+				pr_info("%s,turn backlight off level = %d\n", __func__, temp);
+			} else {
+				if (0 == mfd->backlight_enable_flag) {
+					mfd->backlight_enable_flag++;
+					pr_info("%s,set backlight level = %d\n", __func__, temp);
+				}
+			}
+#endif
+
 			if (mfd->mdp.is_twm_en)
 				twm_en = mfd->mdp.is_twm_en();
 
@@ -1862,6 +1900,12 @@ void mdss_fb_update_backlight(struct msm_fb_data_type *mfd)
 					NOTIFY_TYPE_BL_AD_ATTEN_UPDATE);
 			mdss_fb_bl_update_notify(mfd, NOTIFY_TYPE_BL_UPDATE);
 			pdata->set_backlight(pdata, temp);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+			if (0 == mfd->backlight_enable_flag) {
+				pr_info("%s,set backlight level = %d\n", __func__, temp);
+				mfd->backlight_enable_flag++;
+			}
+#endif
 			mfd->bl_level_scaled = mfd->unset_bl_level;
 			mfd->allow_bl_update = true;
 		}
@@ -2189,7 +2233,7 @@ static int mdss_fb_blank(int blank_mode, struct fb_info *info)
 	struct mdss_panel_data *pdata;
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
 
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	if ((info == prim_fbi) && (blank_mode == FB_BLANK_UNBLANK) &&
 		atomic_read(&prim_panel_is_on)) {
 		atomic_set(&prim_panel_is_on, false);
@@ -2831,7 +2875,7 @@ static int mdss_fb_register(struct msm_fb_data_type *mfd)
 	atomic_set(&mfd->commits_pending, 0);
 	atomic_set(&mfd->ioctl_ref_cnt, 0);
 	atomic_set(&mfd->kickoff_pending, 0);
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	atomic_set(&mfd->resume_pending, 0);
 #endif
 
@@ -2849,7 +2893,7 @@ static int mdss_fb_register(struct msm_fb_data_type *mfd)
 	init_waitqueue_head(&mfd->idle_wait_q);
 	init_waitqueue_head(&mfd->ioctl_q);
 	init_waitqueue_head(&mfd->kickoff_wait_q);
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	init_waitqueue_head(&mfd->resume_wait_q);
 #endif
 
@@ -2869,7 +2913,7 @@ static int mdss_fb_register(struct msm_fb_data_type *mfd)
 	mdss_panel_debugfs_init(panel_info, panel_name);
 	pr_info("FrameBuffer[%d] %dx%d registered successfully!\n", mfd->index,
 					fbi->var.xres, fbi->var.yres);
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	if (panel_info->is_prim_panel) {
 		prim_fbi = fbi;
 		atomic_set(&prim_panel_is_on, false);
@@ -5282,7 +5326,7 @@ void mdss_fb_report_panel_dead(struct msm_fb_data_type *mfd)
 	pr_err("Panel has gone bad, sending uevent - %s\n", envp[0]);
 }
 
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 /*
  * mdss_prim_panel_fb_unblank() - Unblank primary panel FB
  * @timeout : >0 blank primary panel FB after timeout (ms)

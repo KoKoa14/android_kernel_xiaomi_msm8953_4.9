@@ -401,6 +401,11 @@ int mdss_dsi_panel_power_off(struct mdss_panel_data *pdata)
 					__func__);
 	}
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	if (pdata->panel_info.rst_off_delay)
+		mdelay(pdata->panel_info.rst_off_delay);
+#endif
+
 	if (mdss_dsi_pinctrl_set_state(ctrl_pdata, false))
 		pr_debug("reset disable: pinctrl not enabled\n");
 
@@ -1651,6 +1656,9 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 				  MDSS_DSI_ALL_CLKS, MDSS_DSI_CLK_OFF);
 
 end:
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	ctrl_pdata->dsi_pipe_ready = true;
+#endif
 	pr_debug("%s-:\n", __func__);
 	return ret;
 }
@@ -2510,6 +2518,35 @@ static int mdss_dsi_ctl_partial_roi(struct mdss_panel_data *pdata)
 	return rc;
 }
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static int mdss_dsi_dispparam(struct mdss_panel_data *pdata)
+{
+	int rc = -EINVAL;
+	u32 data = 10;
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
+
+	if (pdata == NULL) {
+		pr_err("%s: Invalid input data\n", __func__);
+		return -EINVAL;
+	}
+
+	data = pdata->panel_info.panel_paramstatus;
+
+	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
+				panel_data);
+
+	if (ctrl_pdata->dispparam_fnc)
+		rc = ctrl_pdata->dispparam_fnc(pdata);
+
+	if (rc) {
+		pr_err("%s: unable to initialize the panel\n",
+				__func__);
+		return rc;
+	}
+	return rc;
+}
+#endif
+
 static int mdss_dsi_set_stream_size(struct mdss_panel_data *pdata)
 {
 	u32 stream_ctrl, stream_total, idle;
@@ -2809,7 +2846,13 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 		ctrl_pdata->ctrl_state &= ~CTRL_STATE_MDP_ACTIVE;
 		if (ctrl_pdata->off_cmds.link_state == DSI_LP_MODE)
 			rc = mdss_dsi_blank(pdata, power_state);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		mutex_lock(&ctrl_pdata->dsi_ctrl_mutex);
+#endif
 		rc = mdss_dsi_off(pdata, power_state);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		mutex_unlock(&ctrl_pdata->dsi_ctrl_mutex);
+#endif
 		break;
 	case MDSS_EVENT_CONT_SPLASH_FINISH:
 		if (ctrl_pdata->off_cmds.link_state == DSI_LP_MODE)
@@ -2849,6 +2892,13 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 	case MDSS_EVENT_ENABLE_PARTIAL_ROI:
 		rc = mdss_dsi_ctl_partial_roi(pdata);
 		break;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	case MDSS_EVENT_DISPPARAM:
+		mutex_lock(&ctrl_pdata->dsi_ctrl_mutex);
+		rc = mdss_dsi_dispparam(pdata);
+		mutex_unlock(&ctrl_pdata->dsi_ctrl_mutex);
+		break;
+#endif
 	case MDSS_EVENT_DSI_RESET_WRITE_PTR:
 		rc = mdss_dsi_reset_write_ptr(pdata);
 		break;
@@ -3378,6 +3428,9 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 
 	ctrl_pdata->mdss_util = util;
 	atomic_set(&ctrl_pdata->te_irq_ready, 0);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	ctrl_pdata->dsi_pipe_ready = false;
+#endif
 
 	ctrl_name = of_get_property(pdev->dev.of_node, "label", NULL);
 	if (!ctrl_name)
