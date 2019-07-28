@@ -264,6 +264,9 @@ enum eeprom_cfg_type_t {
 	CFG_EEPROM_WRITE_DATA,
 	CFG_EEPROM_GET_MM_INFO,
 	CFG_EEPROM_INIT,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	CFG_EEPROM_IDENTY,
+#endif
 };
 
 struct eeprom_get_t {
@@ -311,6 +314,13 @@ struct msm_laser_led_cfg_data_t {
 	enum i2c_freq_mode_t          i2c_freq_mode;
 };
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+struct msm_eeprom_identy_t {
+	char eeprom_name[MAX_SENSOR_NAME];
+	uint32_t vendor_id;
+};
+#endif
+
 struct msm_eeprom_cfg_data {
 	enum eeprom_cfg_type_t cfgtype;
 	uint8_t is_supported;
@@ -321,6 +331,9 @@ struct msm_eeprom_cfg_data {
 		struct eeprom_write_t write_data;
 		struct eeprom_get_cmm_t get_cmm_data;
 		struct msm_eeprom_info_t eeprom_info;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		struct msm_eeprom_identy_t identier;
+#endif
 	} cfg;
 };
 

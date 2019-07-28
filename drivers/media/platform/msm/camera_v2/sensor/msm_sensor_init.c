@@ -44,6 +44,8 @@ static int msm_sensor_wait_for_probe_done(struct msm_sensor_init_t *s_init)
 	int rc;
 #ifdef CONFIG_MACH_XIAOMI_TISSOT
 	int tm = 30000;
+#elif (defined CONFIG_MACH_XIAOMI_OXYGEN)
+	int tm = 60000;
 #else
 	int tm = 20000;
 #endif

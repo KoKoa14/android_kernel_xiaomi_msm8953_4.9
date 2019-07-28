@@ -118,6 +118,9 @@ struct msm_ispif_param_data_ext {
 struct msm_ispif_param_data {
 	uint32_t num;
 	struct msm_ispif_params_entry entries[MAX_PARAM_ENTRIES];
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	uint32_t reserved_param; /*Added from Xiaomi*/
+#endif
 };
 
 struct msm_isp_info {

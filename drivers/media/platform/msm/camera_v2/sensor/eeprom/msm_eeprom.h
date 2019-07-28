@@ -29,6 +29,24 @@ struct msm_eeprom_ctrl_t;
 
 #define PROPERTY_MAXSIZE 32
 
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+struct eeprom_identity_map_t {
+	uint32_t is_valid;
+	uint32_t data;
+};
+
+struct msm_eeprom_identity_map_t {
+	struct eeprom_identity_map_t eeprom_flag_offset;
+	struct eeprom_identity_map_t eeprom_valid_flag;
+	struct eeprom_identity_map_t vendor_id_offset;
+};
+
+struct msm_eeprom_identity_block_t {
+	struct msm_eeprom_identity_map_t *map;
+	uint32_t num_map;	/* number of map blocks */
+};
+#endif
+
 struct msm_eeprom_ctrl_t {
 	struct platform_device *pdev;
 	struct mutex *eeprom_mutex;
@@ -46,6 +64,9 @@ struct msm_eeprom_ctrl_t {
 	int32_t userspace_probe;
 	struct msm_eeprom_memory_block_t cal_data;
 	uint8_t is_supported;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	struct msm_eeprom_identity_block_t identity;
+#endif
 };
 
 #endif
