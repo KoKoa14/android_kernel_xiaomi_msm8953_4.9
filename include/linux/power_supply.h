@@ -306,6 +306,9 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_CC_SOC,
 	POWER_SUPPLY_PROP_QG_VBMS_MODE,
 	POWER_SUPPLY_PROP_REAL_CAPACITY,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	POWER_SUPPLY_PROP_PROFILE_STATUS,
+#endif
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_PROP_CHARGE_COUNTER_EXT,
 	/* Properties of type `const char *' */

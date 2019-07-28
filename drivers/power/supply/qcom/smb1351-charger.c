@@ -28,6 +28,10 @@
 #include <linux/delay.h>
 #include <linux/qpnp/qpnp-adc.h>
 #include <linux/pinctrl/consumer.h>
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+#include <linux/gpio.h>
+#include <linux/of_gpio.h>
+#endif
 
 /* Mask/Bit helpers */
 #define _SMB1351_MASK(BITS, POS) \
@@ -510,6 +514,9 @@ struct smb1351_charger {
 	unsigned int		batt_warm_mv;
 	unsigned int		batt_cool_ma;
 	unsigned int		batt_cool_mv;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	unsigned int		chg_en_gpio;
+#endif
 
 	/* pinctrl parameters */
 	const char		*pinctrl_state_name;
@@ -1325,6 +1332,14 @@ static int smb1351_set_usb_chg_current(struct smb1351_charger *chip,
 	} else if (current_ma == USB3_MIN_CURRENT_MA) {
 		/* USB 3.0 - 150mA */
 		reg = CMD_USB_3_MODE | CMD_USB_100_MODE;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	/*
+	 * As smb1351 is used only for parallel charging for our product,
+	 * sometime, current_ma may be 500mA to 900mA, we should set
+	 * high current mode for them, if not, smb1351 will not charge
+	 */
+	} else if (current_ma >= USB2_MAX_CURRENT_MA) {
+#else
 	} else if (current_ma == USB2_MAX_CURRENT_MA) {
 		/* USB 2.0 - 500mA */
 		reg = CMD_USB_2_MODE | CMD_USB_500_MODE;
@@ -1332,6 +1347,7 @@ static int smb1351_set_usb_chg_current(struct smb1351_charger *chip,
 		/* USB 3.0 - 900mA */
 		reg = CMD_USB_3_MODE | CMD_USB_500_MODE;
 	} else if (current_ma > USB2_MAX_CURRENT_MA) {
+#endif
 		/* HC mode  - if none of the above */
 		reg = CMD_USB_AC_MODE;
 
@@ -1352,6 +1368,10 @@ static int smb1351_set_usb_chg_current(struct smb1351_charger *chip,
 	reg |= CMD_INPUT_CURRENT_MODE_CMD;
 	mask = CMD_INPUT_CURRENT_MODE_BIT | CMD_USB_2_3_SEL_BIT |
 		CMD_USB_1_5_AC_CTRL_MASK;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	/* delay 0.5s for AICL rerun */
+	msleep(500);
+#endif
 	rc = smb1351_masked_write(chip, CMD_INPUT_LIMIT_REG, mask, reg);
 	if (rc) {
 		pr_err("Couldn't set charging mode rc = %d\n", rc);

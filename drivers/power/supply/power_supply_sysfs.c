@@ -343,6 +343,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(cc_soc),
 	POWER_SUPPLY_ATTR(qg_vbms_mode),
 	POWER_SUPPLY_ATTR(real_capacity),
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	POWER_SUPPLY_ATTR(profile_status),
+#endif
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_ATTR(charge_counter_ext),
 	/* Properties of type `const char *' */

@@ -320,7 +320,7 @@ struct device_node *of_batterydata_get_best_profile(
 {
 	struct batt_ids batt_ids;
 	struct device_node *node, *best_node = NULL;
-#ifdef CONFIG_MACH_XIAOMI_TISSOT
+#if (defined CONFIG_MACH_XIAOMI_OXYGEN) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	struct device_node *default_node = NULL;
 #endif
 	const char *battery_type = NULL;
@@ -387,6 +387,12 @@ struct device_node *of_batterydata_get_best_profile(
 				}
 			}
 		}
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		rc = of_property_read_string(node, "qcom,battery-type",
+							&battery_type);
+		if (!rc && strcmp(battery_type, "itech_3000mah") == 0)
+				default_node = node;
+#endif
 	}
 
 #ifdef CONFIG_MACH_XIAOMI_TISSOT
@@ -397,6 +403,11 @@ struct device_node *of_batterydata_get_best_profile(
 	}
 #endif
 	if (best_node == NULL) {
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		/* now that best_node is null, there is no need to
+		 * check whether generic node is null. */
+		best_node = default_node;
+#endif
 		pr_err("No battery data found\n");
 		return best_node;
 	}

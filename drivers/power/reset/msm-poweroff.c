@@ -63,7 +63,11 @@ static void scm_disable_sdi(void);
  * There is no API from TZ to re-enable the registers.
  * So the SDI cannot be re-enabled when it already by-passed.
  */
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static int download_mode;
+#else
 static int download_mode = 1;
+#endif
 #else
 static const int download_mode;
 #endif
@@ -163,6 +167,7 @@ static bool get_dload_mode(void)
 	return dload_mode_enabled;
 }
 
+#ifndef CONFIG_MACH_XIAOMI_OXYGEN
 static void enable_emergency_dload_mode(void)
 {
 	int ret;
@@ -189,6 +194,7 @@ static void enable_emergency_dload_mode(void)
 	if (ret)
 		pr_err("Failed to set secure EDLOAD mode: %d\n", ret);
 }
+#endif
 
 static int dload_set(const char *val, const struct kernel_param *kp)
 {
@@ -365,8 +371,10 @@ static void msm_restart_prepare(const char *cmd)
 					     restart_reason);
 			}
 #ifdef CONFIG_QCOM_DLOAD_MODE
+#ifndef CONFIG_MACH_XIAOMI_OXYGEN
 		} else if (!strncmp(cmd, "edl", 3)) {
 			enable_emergency_dload_mode();
+#endif
 #endif
 		} else {
 			__raw_writel(0x77665501, restart_reason);
