@@ -30,6 +30,9 @@
 #include "msm-pcm-routing-v2.h"
 #include "codecs/msm-cdc-pinctrl.h"
 #include "msm8952.h"
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+#include <asm/bootinfo.h>
+#endif
 
 #define DRV_NAME "msm8952-asoc-wcd"
 
@@ -54,6 +57,10 @@ static int msm_btsco_rate = BTSCO_RATE_8KHZ;
 static int msm_btsco_ch = 1;
 static int msm_ter_mi2s_tx_ch = 1;
 static int msm_pri_mi2s_rx_ch = 1;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static int msm_quin_mi2s_rx_ch = 2;
+static int msm_quin_mi2s_tx_ch = 4;
+#endif
 static int msm_proxy_rx_ch = 2;
 static int msm_vi_feed_tx_ch = 2;
 static int mi2s_rx_bit_format = SNDRV_PCM_FORMAT_S16_LE;
@@ -93,9 +100,13 @@ static struct wcd_mbhc_config mbhc_cfg = {
 #endif
 	.mono_stero_detection = false,
 	.swap_gnd_mic = NULL,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	.hs_ext_micbias = true,
+#else
 	.hs_ext_micbias = false,
+#endif
 	.key_code[0] = KEY_MEDIA,
-#if (defined CONFIG_MACH_XIAOMI_MIDO) || (defined CONFIG_MACH_XIAOMI_TISSOT)
+#if (defined CONFIG_MACH_XIAOMI_MIDO) || (defined CONFIG_MACH_XIAOMI_TISSOT) || (defined CONFIG_MACH_XIAOMI_OXYGEN)
 	.key_code[1] = BTN_1,
 	.key_code[2] = BTN_2,
 	.key_code[3] = 0,
@@ -501,6 +512,42 @@ static int msm_auxpcm_be_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	return 0;
 }
+
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+static int msm_quin_mi2s_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+				struct snd_pcm_hw_params *params)
+{
+	struct snd_interval *rate = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_RATE);
+
+	struct snd_interval *channels = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_CHANNELS);
+
+	pr_debug("%s: Num of channels = %d Sample rate = %d\n", __func__,
+			msm_quin_mi2s_rx_ch, mi2s_rx_sample_rate);
+	rate->min = rate->max = mi2s_rx_sample_rate;
+	channels->min = channels->max = msm_quin_mi2s_rx_ch;
+
+	return 0;
+}
+
+static int msm_quin_mi2s_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+				struct snd_pcm_hw_params *params)
+{
+	struct snd_interval *rate = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_RATE);
+
+	struct snd_interval *channels = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_CHANNELS);
+
+	pr_debug("%s: Num of channels = %d Sample rate = %d\n", __func__,
+			msm_quin_mi2s_tx_ch, mi2s_rx_sample_rate);
+	rate->min = rate->max = mi2s_rx_sample_rate;
+	channels->min = channels->max = msm_quin_mi2s_tx_ch;
+
+	return 0;
+}
+#endif
 
 static int msm_mi2s_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				struct snd_pcm_hw_params *params)
@@ -1551,6 +1598,9 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 	void *msm8952_wcd_cal;
 	struct wcd_mbhc_btn_detect_cfg *btn_cfg;
 	u16 *btn_low, *btn_high;
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	u32 hw_version;
+#endif
 
 	msm8952_wcd_cal = kzalloc(WCD_MBHC_CAL_SIZE(WCD_MBHC_DEF_BUTTONS,
 				WCD_MBHC_DEF_RLOADS), GFP_KERNEL);
@@ -1560,6 +1610,8 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 #define S(X, Y) ((WCD_MBHC_CAL_PLUG_TYPE_PTR(msm8952_wcd_cal)->X) = (Y))
 #if (defined CONFIG_MACH_XIAOMI_MIDO) || (defined CONFIG_MACH_XIAOMI_TISSOT)
 	S(v_hs_max, 1600);
+#elif (defined CONFIG_MACH_XIAOMI_OXYGEN)
+	S(v_hs_max, 1700);
 #else
 	S(v_hs_max, 1500);
 #endif
@@ -1609,6 +1661,18 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 	btn_low[4] = 488;
 	btn_high[4] = 488;
 #else
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	btn_low[0] = 75;
+	btn_high[0] = 75;
+	btn_low[1] = 150;
+	btn_high[1] = 260;
+	btn_low[2] = 225;
+	btn_high[2] = 750;
+	btn_low[3] = 450;
+	btn_high[3] = 750;
+	btn_low[4] = 500;
+	btn_high[4] = 750;
+#else
 	btn_low[0] = 75;
 	btn_high[0] = 75;
 	btn_low[1] = 150;
@@ -1621,6 +1685,19 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 	btn_high[4] = 500;
 #endif
 #endif
+#endif
+
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+	/* A 200ohm resistor is connected on headset mic pin on D4 P3,
+	   for fixing the noise issue introduced by NFC P2. So need
+	   re-calculate the button threshold */
+	hw_version = get_hw_version();
+	if (hw_version >= 0x160 && hw_version <= 0x180) {
+		btn_high[0] = 200;
+		btn_high[1] = 380;
+	}
+#endif
+
 	return msm8952_wcd_cal;
 }
 
@@ -2716,7 +2793,11 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_QUINARY_MI2S_TX,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		.be_hw_params_fixup = msm_quin_mi2s_tx_be_hw_params_fixup,
+#else
 		.be_hw_params_fixup = msm_be_hw_params_fixup,
+#endif
 		.ops = &msm8952_quin_mi2s_be_ops,
 		.ignore_suspend = 1,
 	},
@@ -2745,8 +2826,13 @@ static struct snd_soc_dai_link msm8952_quin_dai_link[] = {
 		.cpu_dai_name = "msm-dai-q6-mi2s.4",
 		.platform_name = "msm-pcm-routing",
 #ifdef CONFIG_SND_SOC_MAX98927
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		.codec_dai_name = "tas2560 Stereo ASI1",
+		.codec_name = "tas2560s.2-004e",
+#else
 		.codec_dai_name = "max98927-aif1",
 		.codec_name = "max98927",
+#endif
 #else
 		.codec_dai_name = "snd-soc-dummy-dai",
 		.codec_name = "snd-soc-dummy",
@@ -2754,7 +2840,11 @@ static struct snd_soc_dai_link msm8952_quin_dai_link[] = {
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_QUINARY_MI2S_RX,
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+		.be_hw_params_fixup = msm_quin_mi2s_rx_be_hw_params_fixup,
+#else
 		.be_hw_params_fixup = msm_mi2s_rx_be_hw_params_fixup,
+#endif
 		.ops = &msm8952_quin_mi2s_be_ops,
 		.ignore_pmdown_time = 1, /* dai link has playback support */
 		.ignore_suspend = 1,

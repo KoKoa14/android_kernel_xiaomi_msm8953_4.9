@@ -114,6 +114,22 @@ ifdef CONFIG_SND_SOC_WSA881X
 	WSA881X_OBJS += wsa881x-temp-sensor.o
 endif
 
+ifdef CONFIG_SND_SOC_TAS2560_STEREO
+	TAS2560_STEREO_OBJS += tas2560-core.o
+endif
+
+ifdef CONFIG_SND_SOC_TAS2560_REGMAP_STEREO
+	TAS2560_REGMAP_STEREO_OBJS += tas2560-regmap.o
+endif
+
+ifdef CONFIG_SND_SOC_TAS2560_CODEC_STEREO
+	TAS2560_CODEC_STEREO_OBJS += tas2560-codec.o
+endif
+
+ifdef CONFIG_SND_SOC_TAS2560_MISC_STEREO
+	TAS2560_MISC_STEREO_OBJS += tas2560-misc.o
+endif
+
 ifdef CONFIG_SND_SOC_WSA881X_ANALOG
 	WSA881X_ANALOG_OBJS += wsa881x-analog.o
 	WSA881X_ANALOG_OBJS += wsa881x-tables-analog.o
@@ -210,6 +226,18 @@ wcd9335_dlkm-y := $(WCD9335_OBJS)
 
 obj-$(CONFIG_SND_SOC_WSA881X) += wsa881x_dlkm.o
 wsa881x_dlkm-y := $(WSA881X_OBJS)
+
+obj-$(CONFIG_SND_SOC_TAS2560_STEREO) += tas2560_stereo_dlkm.o
+tas2560_stereo_dlkm-y := $(TAS2560_STEREO_OBJS)
+
+obj-$(CONFIG_SND_SOC_TAS2560_REGMAP_STEREO) += tas2560_regmap_stereo_dlkm.o
+tas2560_regmap_stereo_dlkm-y := $(TAS2560_REGMAP_STEREO_OBJS)
+
+obj-$(CONFIG_SND_SOC_TAS2560_CODEC_STEREO) += tas2560_codec_stereo_dlkm.o
+tas2560_codec_stereo_dlkm-y := $(TAS2560_CODEC_STEREO_OBJS)
+
+obj-$(CONFIG_SND_SOC_TAS2560_MISC_STEREO) += tas2560_misc_stereo_dlkm.o
+tas2560_misc_stereo_dlkm-y := $(TAS2560_MISC_STEREO_OBJS)
 
 obj-$(CONFIG_SND_SOC_WSA881X_ANALOG) += wsa881x_analog_dlkm.o
 wsa881x_analog_dlkm-y := $(WSA881X_ANALOG_OBJS)

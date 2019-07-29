@@ -9,6 +9,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+#define  DEBUG
+#endif
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
@@ -32,6 +35,10 @@
 #include "wcd-mbhc-legacy.h"
 #include "wcd-mbhc-adc.h"
 #include "wcd-mbhc-v2-api.h"
+
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+#define SELFIE_IMPED 20000
+#endif
 
 #ifdef CONFIG_MACH_XIAOMI_TISSOT
 bool is_jack_insert = false;
@@ -326,7 +333,11 @@ out_micb_en:
 				wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_NONE);
 #else
 			/* enable current source and disable mb, pullup*/
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_MB);
+#else
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_CS);
+#endif
 #endif
 		}
 
@@ -358,6 +369,8 @@ out_micb_en:
 			/* Disable micbias, pullup & enable cs */
 #ifdef CONFIG_MACH_XIAOMI_TISSOT
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_NONE);
+#elif (defined CONFIG_MACH_XIAOMI_OXYGEN)
+			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_MB);
 #else
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_CS);
 #endif
@@ -384,6 +397,8 @@ out_micb_en:
 			/* Disable micbias, pullup & enable cs */
 #ifdef CONFIG_MACH_XIAOMI_TISSOT
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_NONE);
+#elif (defined CONFIG_MACH_XIAOMI_OXYGEN)
+			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_MB);
 #else
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_CS);
 #endif
@@ -751,6 +766,25 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 					&mbhc->zl, &mbhc->zr);
 			WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_FSM_EN,
 						 fsm_en);
+#ifdef CONFIG_MACH_XIAOMI_OXYGEN
+			if ((jack_type == SND_JACK_UNSUPPORTED) &&
+				mbhc->zl > SELFIE_IMPED &&
+				mbhc->zr > SELFIE_IMPED) {
+				mbhc->current_plug = MBHC_PLUG_TYPE_HEADSET;
+				mbhc->jiffies_atreport = jiffies;
+				jack_type = SND_JACK_HEADSET;
+				if (mbhc->hph_status) {
+					mbhc->hph_status &= ~(SND_JACK_LINEOUT |
+						SND_JACK_HEADPHONE |
+						SND_JACK_ANC_HEADPHONE |
+						SND_JACK_UNSUPPORTED);
+					wcd_mbhc_jack_report(mbhc,
+						&mbhc->headset_jack,
+						mbhc->hph_status,
+						WCD_MBHC_JACK_MASK);
+				}
+			}
+#else
 			if ((mbhc->zl > mbhc->mbhc_cfg->linein_th &&
 				mbhc->zl < MAX_IMPED) &&
 				(mbhc->zr > mbhc->mbhc_cfg->linein_th &&
@@ -771,6 +805,7 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				pr_debug("%s: Marking jack type as SND_JACK_LINEOUT\n",
 				__func__);
 			}
+#endif
 		}
 
 		mbhc->hph_status |= jack_type;
