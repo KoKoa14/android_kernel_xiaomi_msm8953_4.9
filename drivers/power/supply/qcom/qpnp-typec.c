@@ -683,7 +683,7 @@ static irqreturn_t dfp_detect_handler(int irq, void *_chip)
 
 #ifdef CONFIG_MACH_XIAOMI_OXYGEN
 			chip->typec_state = POWER_SUPPLY_TYPE_DFP;
-			chip->type_c_psy.type = POWER_SUPPLY_TYPE_DFP;
+			chip->typec_psy_desc.type = POWER_SUPPLY_TYPE_DFP;
 			chip->current_ma = 0;
 			rc = set_property_on_battery(chip,
 					POWER_SUPPLY_PROP_TYPEC_MODE);

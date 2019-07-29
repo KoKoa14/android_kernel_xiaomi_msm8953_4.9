@@ -9432,8 +9432,8 @@ static int smbchg_resume(struct device *dev)
 {
 	struct smbchg_chip *chip = dev_get_drvdata(dev);
 
-	if (chip->psy_registered)
-		power_supply_changed(&chip->batt_psy);
+	if (chip->dc_psy)
+		power_supply_changed(chip->batt_psy);
 
 	return 0;
 }

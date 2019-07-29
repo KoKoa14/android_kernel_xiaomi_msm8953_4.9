@@ -2820,7 +2820,7 @@ static void soc_work_fn(struct work_struct *work)
 	/* if soc changes, report power supply change uevent */
 	if (soc != prev_soc) {
 		if (chip->power_supply_registered)
-			power_supply_changed(&chip->bms_psy);
+			power_supply_changed(chip->bms_psy);
 		prev_soc = soc;
 	}
 
@@ -6893,7 +6893,7 @@ static void check_empty_work(struct work_struct *work)
 			pr_info("EMPTY SOC high \n");
 			chip->soc_empty = true;
 			if (chip->power_supply_registered)
-				power_supply_changed(&chip->bms_psy);
+				power_supply_changed(chip->bms_psy);
 		}
 	}
 #else
