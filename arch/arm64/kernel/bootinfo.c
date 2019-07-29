@@ -15,7 +15,7 @@
 #include <asm/setup.h>
 #include <asm/bootinfo.h>
 #include <linux/bitops.h>
-#include <linux/qpnp/power-on.h>
+#include <linux/input/qpnp-power-on.h>
 
 static const char * const powerup_reasons[PU_REASON_MAX] = {
 	[PU_REASON_EVENT_KPD]		= "keypad",
