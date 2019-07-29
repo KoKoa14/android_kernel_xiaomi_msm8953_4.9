@@ -15,6 +15,7 @@
 /dts-v1/;
 
 #include "msm8953.dtsi"
+#include "pmi8950.dtsi"
 #include "oxygen/msm8953-oxygen.dtsi"
 
 / {

@@ -17,13 +17,9 @@
     };
 };
 
-&pmi8950_charger {
-    /delete-property/ qcom,autoadjust-vfloat;
-};
-
 &spmi_bus {
 	qcom,pmi8950@2 {
-        qcom,leds@a100 {
+	        qcom,leds@a100 {
 			qcom,led_mpp_2 {
 				label = "mpp";
 				linux,name = "button-backlight";
@@ -36,7 +32,33 @@
 				qcom,mode-ctrl = <0x60>;
 				qcom,mode = "manual";
 			};
-        };
+		};
+
+		pmi8950_charger: qcom,qpnp-smbcharger {
+			qcom,iterm-ma = <200>;
+			qcom,float-voltage-mv = <4380>;
+			qcom,resume-delta-mv = <50>;
+			qcom,charge-unknown-battery;
+			/delete-property/ qcom,autoadjust-vfloat;
+			qcom,override-usb-current;
+			qcom,fastchg-current-comp = <900>;
+			qcom,float-voltage-comp = <15>;
+
+		};
+
+		pmi8950_fg: qcom,fg {
+			/delete-property/ qcom,resume-soc;
+			qcom,resume-soc-raw = <254>;
+			qcom,fg-iterm-ma = <300>;
+			qcom,fg-chg-iterm-ma = <200>;
+			qcom,fg-cutoff-voltage-mv = <3400>;
+			qcom,irq-volt-empty-mv = <3100>;
+			qcom,fg-use-vbat-low-empty-soc;
+			qcom,hold-soc-while-full;
+			qcom,fg-cc-cv-threshold-mv =<4370>;
+			qcom,vbat-estimate-diff-mv = <250>;
+
+		};
 	};
 };
 
@@ -44,6 +66,10 @@
     qcom,switch-freq-khz = <600>;
     /delete-property/ qcom,en-ext-pfet-sc-pro;
     qcom,en-cabc;
+};
+
+&pmi8950_charger {
+    /delete-property/ qcom,autoadjust-vfloat;
 };
 
 &pmi8950_torch0 {

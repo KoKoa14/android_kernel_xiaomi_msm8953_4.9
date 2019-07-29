@@ -336,6 +336,17 @@
 		pinctrl-1 = <&spk_id_pull_up>;
 		pinctrl-2 = <&spk_id_no_pull>;
 	};
+
+	qcom,memshare {
+		compatible = "qcom,memshare";
+
+		mem_client_3_size: qcom,client_3 {
+			compatible = "qcom,memshare-peripheral";
+			qcom,peripheral-size = <0x0>;
+			qcom,client-id = <1>;
+			label = "modem";
+		};
+	};
 };
 
 
