@@ -1547,7 +1547,7 @@ static bool test_report_type_valid(enum f54_report_types report_type)
 
 static void test_set_report_size(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char tx = f54->tx_assigned;
 	unsigned char rx = f54->rx_assigned;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -1640,7 +1640,7 @@ static void test_set_report_size(void)
 
 static int test_set_interrupt(bool set)
 {
-	int retval;
+	int retval = 0;
 	unsigned char ii;
 	unsigned char zero = 0x00;
 	unsigned char temp;
@@ -1718,7 +1718,7 @@ static int test_set_interrupt(bool set)
 
 static int test_wait_for_command_completion(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char value;
 	unsigned char timeout_count;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -1760,7 +1760,7 @@ static int test_wait_for_command_completion(void)
 
 static int test_do_command(unsigned char command)
 {
-	int retval;
+	int retval = 0;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
 	retval = synaptics_rmi4_reg_write(rmi4_data,
@@ -1782,7 +1782,7 @@ static int test_do_command(unsigned char command)
 }
 static int test_do_preparation(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char value;
 	unsigned char zero = 0x00;
 #ifndef USE_RT8
@@ -1935,7 +1935,7 @@ static int test_do_preparation(void)
 
 static int test_do_afe_calibration(enum f54_afe_cal mode)
 {
-	int retval;
+	int retval = 0;
 	unsigned char timeout = CALIBRATION_TIMEOUT_S;
 	unsigned char timeout_count = 0;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -2027,7 +2027,7 @@ static int test_do_afe_calibration(enum f54_afe_cal mode)
 
 static int test_check_for_idle_status(void)
 {
-	int retval;
+	int retval = 0;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
 	switch (f54->status) {
@@ -2058,7 +2058,7 @@ static int test_check_for_idle_status(void)
 
 static void test_timeout_work(struct work_struct *work)
 {
-	int retval;
+	int retval = 0;
 	unsigned char command;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2187,7 +2187,7 @@ static int test_do_resume_touch(void)
 
 static void test_resume_touch_work(struct work_struct *work)
 {
-	int retval;
+	int retval = 0;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
 	retval = test_do_resume_touch();
@@ -2338,7 +2338,7 @@ static ssize_t test_sysfs_report_size_show(struct device *dev,
 static ssize_t test_sysfs_status_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	int retval;
+	int retval = 0;
 
 	mutex_lock(&f54->status_mutex);
 
@@ -2352,7 +2352,7 @@ static ssize_t test_sysfs_status_show(struct device *dev,
 static ssize_t test_sysfs_do_preparation_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2388,7 +2388,7 @@ exit:
 static ssize_t test_sysfs_force_cal_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2499,7 +2499,7 @@ static ssize_t test_sysfs_get_report_polling(void)
 static ssize_t test_sysfs_get_report_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned char command;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -2573,7 +2573,7 @@ exit:
 static ssize_t test_sysfs_resume_touch_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2597,7 +2597,7 @@ static ssize_t test_sysfs_resume_touch_store(struct device *dev,
 static ssize_t test_sysfs_do_afe_calibration_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2632,7 +2632,7 @@ static ssize_t test_sysfs_report_type_show(struct device *dev,
 static ssize_t test_sysfs_report_type_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned char data;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -2703,7 +2703,7 @@ exit:
 static ssize_t test_sysfs_fifoindex_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	int retval;
+	int retval = 0;
 	unsigned char data[2];
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -2726,7 +2726,7 @@ static ssize_t test_sysfs_fifoindex_show(struct device *dev,
 static ssize_t test_sysfs_fifoindex_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned char data[2];
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -2762,7 +2762,7 @@ static ssize_t test_sysfs_no_auto_cal_show(struct device *dev,
 static ssize_t test_sysfs_no_auto_cal_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned char data;
 	unsigned long setting;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
@@ -3092,7 +3092,7 @@ static ssize_t test_sysfs_read_report_show(struct device *dev,
 static ssize_t test_sysfs_read_report_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	int retval;
+	int retval = 0;
 	unsigned char timeout = GET_REPORT_TIMEOUT_S * 10;
 	unsigned char timeout_count;
 	const char cmd[] = {'1', 0};
@@ -3167,7 +3167,7 @@ static ssize_t test_sysfs_read_report_td43xx(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count,
 		bool do_preparation, bool do_reset)
 {
-	int retval;
+	int retval = 0;
 	unsigned char timeout = GET_REPORT_TIMEOUT_S * 10;
 	unsigned char timeout_count;
 	const char cmd[] = {'1', 0};
@@ -4268,7 +4268,7 @@ static ssize_t test_sysfs_abs_0d_open_w_autoservo_show(struct device *dev,
 
 static void test_report_work(struct work_struct *work)
 {
-	int retval;
+	int retval = 0;
 	unsigned char report_index[2];
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -4364,7 +4364,7 @@ static void test_remove_sysfs(void)
 
 static int test_set_sysfs(void)
 {
-	int retval;
+	int retval = 0;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
 	f54->sysfs_dir = kobject_create_and_add(SYSFS_FOLDER_NAME,
@@ -4533,7 +4533,7 @@ static void test_set_data(void)
 
 static int test_set_controls(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char length;
 	unsigned char num_of_sensing_freqs;
 	unsigned short reg_addr = f54->control_base_addr;
@@ -5235,7 +5235,7 @@ exit_no_mem:
 
 static int test_set_queries(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char offset;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -5888,7 +5888,7 @@ static int test_f55_set_controls(void)
 
 static int test_f55_set_queries(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char offset;
 	struct synaptics_rmi4_data *rmi4_data = f54->rmi4_data;
 
@@ -6053,7 +6053,7 @@ static int test_f55_set_queries(void)
 
 static void test_f55_init(struct synaptics_rmi4_data *rmi4_data)
 {
-	int retval;
+	int retval = 0;
 	unsigned char ii;
 	unsigned char rx_electrodes;
 	unsigned char tx_electrodes;
@@ -6209,7 +6209,7 @@ static void test_f55_set_regs(struct synaptics_rmi4_data *rmi4_data,
 
 static int test_scan_pdt(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned char intr_count = 0;
 	unsigned char page;
 	unsigned short addr;
@@ -6283,7 +6283,7 @@ static void synaptics_rmi4_test_attn(struct synaptics_rmi4_data *rmi4_data,
 
 static ssize_t short_test_333x(void)
 {
-	int retval;
+	int retval = 0;
 	const struct synaptics_dsx_board_data *bdata =
 		f54->rmi4_data->hw_if->board_data;
 
@@ -6334,7 +6334,7 @@ out:
 
 static ssize_t short_test_4x22(void)
 {
-	int retval;
+	int retval = 0;
 	char buf[4];
 
 	retval = test_sysfs_td43xx_ee_short_store(NULL, NULL, "1", 1);
@@ -6361,7 +6361,7 @@ out:
 
 static ssize_t open_test_333x(void)
 {
-	int retval;
+	int retval = 0;
 	int val, tx, rx, num = 0;
 	char *pos;
 
@@ -6408,7 +6408,7 @@ out:
 
 static ssize_t open_test_4x22(void)
 {
-	int retval;
+	int retval = 0;
 	char buf[4];
 
 	retval = test_sysfs_td43xx_amp_open_store(NULL, NULL, "1", 1);
@@ -6435,7 +6435,7 @@ out:
 
 static ssize_t i2c_test(void)
 {
-	int retval;
+	int retval = 0;
 	unsigned short addr;
 	unsigned char query_data[8] = {0};
 
@@ -6481,7 +6481,7 @@ static ssize_t syna_selftest_read(struct file *file, char __user *buf, size_t co
 
 static ssize_t syna_selftest_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
-	int retval;
+	int retval = 0;
 
 	if (!f54->data) {
 		retval = -EINVAL;
@@ -6532,7 +6532,7 @@ static int syna_datadump_open(struct inode *inode, struct file *file)
 
 static ssize_t syna_datadump_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
-	int retval;
+	int retval = 0;
 	int cnt;
 
 	if (*pos != 0)
@@ -6590,7 +6590,7 @@ static const struct file_operations syna_datadump_ops = {
 
 static int synaptics_rmi4_test_init(struct synaptics_rmi4_data *rmi4_data)
 {
-	int retval;
+	int retval = 0;
 	static bool proc_already;
 
 	if (f54) {
@@ -6737,7 +6737,7 @@ exit:
 
 static void synaptics_rmi4_test_reset(struct synaptics_rmi4_data *rmi4_data)
 {
-	int retval;
+	int retval = 0;
 
 	if (!f54) {
 		synaptics_rmi4_test_init(rmi4_data);

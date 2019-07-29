@@ -45,7 +45,7 @@ static int ft5x46_i2c_send(struct device *dev,
 int focal_i2c_read(struct i2c_client *client, char *writebuf,
 		int writelen, char *readbuf, int readlen)
 {
-	int ret;
+	int ret = 0;
 
 	if (readlen > 0)	{
 		if (writelen > 0) {
@@ -87,7 +87,7 @@ int focal_i2c_read(struct i2c_client *client, char *writebuf,
 
 int focal_i2c_write(struct i2c_client *client, char *writebuf, int writelen)
 {
-	int ret;
+	int ret = 0;
 
 	struct i2c_msg msgs[] = {
 		{
