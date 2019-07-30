@@ -2,7 +2,7 @@
 #define _SMART_AMP_H
 
 #include <linux/types.h>
-#include <sound/apr_audio-v2.h>
+#include <dsp/apr_audio-v2.h>
 #include <linux/delay.h>
 
 #define AFE_SMARTAMP_MODULE	0x0F010209
